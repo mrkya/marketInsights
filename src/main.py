@@ -1,44 +1,53 @@
+# main.py    
+from fetch_metadata import fetch_metadata
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 import time
+import re
 
-# Setup Selenium WebDriver
-options = webdriver.ChromeOptions()
-options.add_argument("--headless")  # Run in headless mode for efficiency
-options.add_argument("--disable-gpu")
-options.add_argument("--no-sandbox")
-options.add_argument("--disable-dev-shm-usage")
+def main():
+    global done
+    done = False
 
-server=Service(ChromeDriverManager().install()) 
-driver = webdriver.Chrome(service=server,options=options)
+    # Setup Selenium WebDriver
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless")  # Run in headless mode for efficiency
+    options.add_argument("--disable-gpu")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
 
-# Load Yahoo Finance News Page
-url = "https://finance.yahoo.com"
-driver.get(url)
-time.sleep(3)  # Allow time for content to load
+    server=Service(ChromeDriverManager().install()) 
+    driver = webdriver.Chrome(service=server,options=options)
 
-# Extract Page Source
-soup = BeautifulSoup(driver.page_source, "html.parser")
+    # Load Yahoo Finance News Page
+    url = "https://finance.yahoo.com/topic/latest-news/"
+    driver.get(url)
 
-# Find news headlines
-news_data = []
-headlines = soup.find_all("h3")
+    time.sleep(3)  # Allow time for content to load
+    
+    # Extract Page Source
+    soup = BeautifulSoup(driver.page_source, "html.parser") 
 
-for h in headlines[:10]:  # Fetch top 10 headlines
-    title = h.text.strip()
-    a_tag = h.find("a")
-    link = a_tag["href"] if a_tag and "href" in a_tag.attrs else None
-    if link:
-        full_link = f"https://finance.yahoo.com{link}" if link.startswith("/") else link
-        news_data.append({"title": title, "link": full_link})
+    # Find news headlines
+    news_data = []
+    headlines = soup.find_all("h3")
 
-# Close WebDriver
-driver.quit()
+    for h in headlines:  # Fetch top 10 headlines
+        title = h.text.strip()
+        a_tag = h.find_previous("a")
+        link = a_tag["href"] if a_tag and "href" in a_tag.attrs else None
+        if link and re.search(r'/news/.', link):
+            news_data.append({"title": title, "link": link})
 
-# Print extracted news
-for news in news_data:
-    print(f"Title: {news['title']}")
-    print(f"Link: {news['link']}\n")
+    # Print extracted news
+    for news in news_data[:3]:
+        fetch_metadata(news["title"], news["link"], driver) 
+        
+    # Close WebDriver
+    driver.quit()
+
+if __name__ == "__main__":
+    main()

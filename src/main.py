@@ -1,5 +1,5 @@
 # main.py    
-from fetch_metadata import fetch_metadata
+from create_db_entry import create_db_entry
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
@@ -8,10 +8,9 @@ from bs4 import BeautifulSoup
 import time
 import re
 
-def main():
-    global done
-    done = False
+url = "https://finance.yahoo.com/topic/latest-news/"
 
+def main():
     # Setup Selenium WebDriver
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")  # Run in headless mode for efficiency
@@ -19,23 +18,22 @@ def main():
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
 
+    # Initialize the Chrome WebDriver   
     server=Service(ChromeDriverManager().install()) 
     driver = webdriver.Chrome(service=server,options=options)
 
     # Load Yahoo Finance News Page
-    url = "https://finance.yahoo.com/topic/latest-news/"
     driver.get(url)
 
     time.sleep(3)  # Allow time for content to load
-    
-    # Extract Page Source
-    soup = BeautifulSoup(driver.page_source, "html.parser") 
+    soup = BeautifulSoup(driver.page_source, "html.parser") # Extract Page Source
 
-    # Find news headlines
+    # Find all news headlines
     news_data = []
     headlines = soup.find_all("h3")
 
-    for h in headlines:  # Fetch top 10 headlines
+    # Extract news title and link   
+    for h in headlines:
         title = h.text.strip()
         a_tag = h.find_previous("a")
         link = a_tag["href"] if a_tag and "href" in a_tag.attrs else None
@@ -43,8 +41,9 @@ def main():
             news_data.append({"title": title, "link": link})
 
     # Print extracted news
-    for news in news_data[:3]:
-        fetch_metadata(news["title"], news["link"], driver) 
+    for news in news_data[:1]:
+        db_entry = create_db_entry(news["title"], news["link"], driver)  
+        print(db_entry) 
         
     # Close WebDriver
     driver.quit()

@@ -5,7 +5,7 @@ import time as time_module
 # global variables for content extraction
 author_key = "byline-attr-author"
 time_key = "byline-attr-time-style"
-author_meta_key="byline-attr-meta-separator"
+author_meta_key = "byline-attr-meta-separator"
 time_key_1 = "datetime"
 time_key_2 = "data-timestamp"  
 content_key = "atoms-wrapper"   

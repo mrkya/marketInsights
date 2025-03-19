@@ -49,12 +49,17 @@ def create_db_entry(title, url, driver):
     
     meta_data = fetch_metadata(soup)
     article_paragraphs = fetch_content(soup)
-
-    return {
-        "title": title,
-        "url": url,
-        "authors": meta_data["authors"],
-        "time_stamp": meta_data["time_stamp"],
-        "content": article_paragraphs   
-    }
+    summary = ""
+    sentiment_score = 0.0   
+    
+    return (
+        title, 
+        url, 
+        meta_data["authors"], 
+        meta_data["time_stamp"], 
+        article_paragraphs,
+        summary,
+        sentiment_score
+    )
+        
     

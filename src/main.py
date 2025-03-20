@@ -1,6 +1,6 @@
 # main.py    
-from create_db_entry import create_db_entry
-from cloud_db import connect
+from src.sources.yahoo import create_db_entry
+from src.db import connect
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
